@@ -2,40 +2,115 @@ use std::env;
 use std::fs;
 use std::io;
 
+fn part1(input: &str) -> i32 {
+    let directions = input
+        .lines()
+        .map(|line| {
+            let mut c = line.chars();
+            let d = c
+                .next()
+                .map(|d| match d {
+                    'L' => -1,
+                    'R' => 1,
+                    _ => panic!(),
+                })
+                .unwrap();
+
+            let n: i32 = line[1..].parse().unwrap();
+            d * n
+        })
+        .collect::<Vec<i32>>();
+
+    let mut c = 0;
+    let mut result = 50;
+    for d in directions {
+        result += d;
+
+        // below 0
+        while result < 0 {
+            result += 100;
+        }
+
+        // above 99
+        result %= 100;
+        if result == 0 {
+            c += 1;
+        }
+    }
+
+    c
+}
+
+fn part2(input: &str) -> i32 {
+    let directions = input
+        .lines()
+        .map(|line| {
+            let mut c = line.chars();
+            let d = c
+                .next()
+                .map(|d| match d {
+                    'L' => -1,
+                    'R' => 1,
+                    _ => panic!(),
+                })
+                .unwrap();
+
+            let n: i32 = line[1..].parse().unwrap();
+            d * n
+        })
+        .collect::<Vec<i32>>();
+
+    let mut clicks = 0;
+    let mut result = 50;
+    for d in directions {
+        let b = result;
+        let c_before = clicks;
+        result += d;
+
+        // below 0
+        while result < 0 {
+            result += 100;
+            clicks += 1;
+        }
+
+        // above 99
+        while result > 99 {
+            result -= 100;
+            clicks += 1;
+        }
+
+        println!(
+            "before {} + {} = {}. clicks: {}",
+            b,
+            d,
+            result,
+            clicks - c_before
+        );
+
+        if (clicks - c_before) > 1 {
+            clicks = clicks;
+        }
+    }
+
+    clicks
+}
+
 fn main() -> io::Result<()> {
     let current_dir = env::current_dir()?;
     println!("Current working directory: {}", current_dir.display());
 
-    let input = "day01/input.txt";
-
+    let input = "day01/test_input.txt";
     let contents = fs::read_to_string(input)?;
 
-    let mut left = vec![];
-    let mut right = vec![];
+    // println!("test part1 {}", part1(&contents));
+    // println!("test part2 {}", part2(&contents));
 
-    for line in contents.lines() {
-        let mut words = line.split_whitespace();
-        left.push(words.next().unwrap().parse::<usize>().unwrap());
-        right.push(words.next().unwrap().parse::<usize>().unwrap());
-    }
+    let input = "day01/input.txt";
+    let contents = fs::read_to_string(input)?;
 
-    left.sort();
-    right.sort();
-
-    let result_part1: usize = left
-        .iter()
-        .zip(right.iter())
-        .map(|(l, r)| l.abs_diff(r.clone()))
-        .sum();
-
-    println!("part01 {}", result_part1);
-
-    let result_part2: usize = left
-        .iter()
-        .map(|number| number * right.iter().filter(|r| &number == r).count())
-        .sum();
-
-    println!("part02 {}", result_part2);
+    //println!("part1 {}", part1(&contents));
+    println!("part2 {}", part2(&contents));
+    // 6649 too high
 
     Ok(())
 }
