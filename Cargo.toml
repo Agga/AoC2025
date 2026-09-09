@@ -6,6 +6,8 @@ edition = "2021"
 [dependencies]
 regex = "1.4.2"
 itertools = "0.15.0"
+fancy-regex = "0.19.1"
+
 
 [lib]
 name = "aoc"
@@ -20,9 +22,9 @@ path = "day01/main.rs"
 name = "day02"
 path = "day02/main.rs"
 
-# [[bin]]
-# name="day03"
-# path="day03/main.rs"
+[[bin]]
+name = "day03"
+path = "day03/main.rs"
 
 # [[bin]]
 # name="day04"
