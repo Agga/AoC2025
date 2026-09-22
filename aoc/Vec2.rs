@@ -8,7 +8,7 @@ pub struct Vec2 {
 
 impl Vec2 {
     #[allow(dead_code)]
-    pub fn new(x: i32, y: i32) -> Self {
+    pub const fn new(x: i32, y: i32) -> Self {
         Vec2 { x, y }
     }
 
@@ -99,6 +99,39 @@ pub struct Grid<T> {
     pub data: Vec<T>,
 }
 
+pub struct GridIter<'a, T> {
+    iter: std::slice::Iter<'a, T>,
+    width: i32,
+    index: i32,
+}
+
+impl<'a, T> Iterator for GridIter<'a, T> {
+    type Item = (Vec2, &'a T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let value = self.iter.next()?;
+
+        let x = self.index % self.width;
+        let y = self.index / self.width;
+        self.index += 1;
+
+        Some((Vec2::new(x, y), value))
+    }
+}
+
+impl<'a, T> IntoIterator for &'a Grid<T> {
+    type Item = (Vec2, &'a T);
+    type IntoIter = GridIter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        GridIter {
+            iter: self.data.iter(),
+            width: self.width,
+            index: 0,
+        }
+    }
+}
+
 impl<T> Grid<T> {
     pub fn for_each_field<F: Fn(Vec2, char)>(input: &str, func: F) {
         for (y, l) in input.lines().enumerate() {
@@ -111,6 +144,21 @@ impl<T> Grid<T> {
                     c,
                 );
             }
+        }
+    }
+
+    pub fn from_file<F: Fn(char)->T>( input: &str, func: F ) -> Self {
+        let width = input.lines().next().unwrap().chars().count() as i32;
+        let height = input.lines().count() as i32;
+
+        let data: Vec<T> = input.lines().flat_map(|line| {
+            line.chars().map( |c| func( c ))
+        }).collect();
+
+        Grid{
+            width,
+            height,
+            data
         }
     }
 
