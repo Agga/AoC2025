@@ -7,40 +7,32 @@ const TEST_DATA: &str = include_str!("test.txt");
 
 #[allow(unused_variables)]
 pub fn do_part1(input: &str) -> usize {
-    let mut line = input.lines();
+    let (ranges, ingredient) = input.split_once("\r\n\r\n").unwrap();
 
     // grab rules
-    let mut rules: Vec<(u64, u64)> = vec![];
-    while let Some(l) = line.next() {
-        if l.is_empty() {
-            break;
-        }
-
-        let mut iter = l.split("-");
-        if let (Some(from), Some(to), None) = (iter.next(), iter.next(), iter.next()) {
-            rules.push((from.parse().unwrap(), to.parse().unwrap()))
-        }
-    }
+    let rules: Vec<(u64, u64)> = ranges
+        .lines()
+        .map(|line| {
+            let (min, max) = line.split_once("-").unwrap();
+            (min.parse().unwrap(), max.parse().unwrap())
+        })
+        .collect();
 
     // grab numbers
-    let mut numbers: Vec<u64> = vec![];
-    while let Some(l) = line.next() {
-        if l.is_empty() {
-            break;
-        }
-
-        numbers.push(l.parse().unwrap());
-    }
+    let numbers: Vec<u64> = ingredient
+        .lines()
+        .map(|line| line.parse().unwrap())
+        .collect();
 
     let fresh_items = numbers
         .iter()
         .filter(|&num| {
             for (a, b) in rules.iter() {
                 if num >= a && num <= b {
-                    return false;
+                    return true;
                 }
             }
-            return true;
+            return false;
         })
         .count();
 
