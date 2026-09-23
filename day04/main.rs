@@ -1,3 +1,4 @@
+// use aoc::{Grid, Vec2};
 use aoc::{Grid, Vec2};
 use std::time::Instant;
 
@@ -6,7 +7,7 @@ const INPUT_DATA: &str = include_str!("input.txt");
 #[allow(dead_code)]
 const TEST_DATA: &str = include_str!("test.txt");
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Block {
     Empty,
     Paper,
@@ -37,30 +38,43 @@ pub fn can_remove_paper(grid: &Grid<Block>, pos: &Vec2) -> bool {
 
 #[allow(unused_variables)]
 pub fn do_part1(input: &str) -> usize {
-    let mut grid = Grid::<Block>::from_file(input, |c| match c {
-        '@' => Block::Paper,
-        _ => Block::Empty,
-    });
-
-    let papers: Vec<(Vec2, &Block)> = grid.iter().filter(|&v| *v.1 == Block::Paper).collect();
-
-    for (pos, _) in papers.iter() {
-        if can_remove_paper(&grid, pos) {
-            grid.set_value_for(pos, Block::Empty);
-        }
-    }
-
     0
 }
 
 #[allow(unused_variables)]
 pub fn do_part2(input: &str) -> usize {
-    let grid = Grid::<Block>::from_file(input, |c| match c {
+    let mut grid = Grid::<Block>::from_file(input, |c| match c {
         '@' => Block::Paper,
         _ => Block::Empty,
     });
 
-    0
+    // create vec of all papers
+    let mut all_paper: Vec<(Vec2, Block)> = grid
+        .iter()
+        .filter(|&f| f.1 == Block::Paper)
+        .cloned()
+        .collect();
+
+    let mut total_papers = 0;
+
+    loop {
+        let before = all_paper.len();
+        all_paper.retain(|(pos, _)| {
+            if can_remove_paper(&grid, pos) {
+                grid.set_value_for(pos, Block::Empty);
+                false
+            } else {
+                true
+            }
+        });
+        if all_paper.len() == before {
+            break;
+        } else {
+            total_papers += before - all_paper.len();
+        }
+    }
+
+    total_papers
 }
 
 fn main() {

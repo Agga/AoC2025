@@ -11,8 +11,7 @@ fancy-regex = "0.19.1"
 
 [lib]
 name = "aoc"
-path = "aoc/Vec2.rs"
-# crate-type = ["staticlib", "rlib"]
+path = "aoc/lib.rs"
 
 [[bin]]
 name = "day01"
