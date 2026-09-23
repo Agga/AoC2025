@@ -1,4 +1,3 @@
-use itertools::Itertools;
 use std::time::Instant;
 
 #[allow(dead_code)]
@@ -40,12 +39,24 @@ pub fn do_part1(input: &str) -> usize {
     fresh_items
 }
 
+pub fn intersect(a: (u64, u64), b: (u64, u64)) -> bool {
+    u64::max(a.0, b.0) <= u64::min(a.1, b.1)
+}
+
+pub fn merge(a: (u64, u64), b: (u64, u64)) -> (u64, u64) {
+    (u64::min(a.0, b.0), u64::max(a.1, b.1))
+}
+
+pub fn count_interval(v: (u64, u64)) -> u64 {
+    v.1 - v.0 + 1
+}
+
 #[allow(unused_variables)]
-pub fn do_part2(input: &str) -> usize {
+pub fn do_part2(input: &str) -> u64 {
     let (ranges, ingredient) = input.split_once("\r\n\r\n").unwrap();
 
     // grab rules
-    let rules: Vec<(u64, u64)> = ranges
+    let mut rules: Vec<(u64, u64)> = ranges
         .lines()
         .map(|line| {
             let (min, max) = line.split_once("-").unwrap();
@@ -53,12 +64,29 @@ pub fn do_part2(input: &str) -> usize {
         })
         .collect();
 
-    let all_numbers = rules
-        .iter()
-        .flat_map(|(min, max)| (min..=max).iter().collect())
-        .count();
+    // sort ranges
+    rules.sort();
 
-    all_numbers
+    let mut total_numbers = 0;
+
+    let mut prev: Option<(u64, u64)> = None;
+    for curr in rules {
+        match prev {
+            None => prev = Some(curr),
+            Some(value) => {
+                if intersect(value, curr) {
+                    prev = Some(merge(value, curr));
+                } else {
+                    total_numbers += count_interval(value);
+                    prev = Some(curr);
+                }
+            }
+        }
+    }
+
+    total_numbers += count_interval(prev.unwrap());
+
+    total_numbers
 }
 
 fn main() {
@@ -78,5 +106,17 @@ fn part1() {
 
 #[test]
 fn part2() {
-    assert_eq!(0, do_part2(TEST_DATA));
+    assert!(intersect((0, 10), (5, 10)));
+    assert!(intersect((5, 10), (0, 10)));
+
+    assert!(intersect((0, 10), (10, 15)));
+    assert!(intersect((10, 15), (0, 10)));
+
+    assert!(!intersect((0, 10), (11, 15)));
+    assert!(!intersect((11, 15), (0, 10)));
+
+    assert!(intersect((0, 10), (1, 9)));
+    assert!(intersect((1, 9), (0, 10)));
+
+    assert_eq!(14, do_part2(TEST_DATA));
 }
