@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::time::Instant;
 
 #[allow(dead_code)]
@@ -41,7 +42,23 @@ pub fn do_part1(input: &str) -> usize {
 
 #[allow(unused_variables)]
 pub fn do_part2(input: &str) -> usize {
-    0
+    let (ranges, ingredient) = input.split_once("\r\n\r\n").unwrap();
+
+    // grab rules
+    let rules: Vec<(u64, u64)> = ranges
+        .lines()
+        .map(|line| {
+            let (min, max) = line.split_once("-").unwrap();
+            (min.parse().unwrap(), max.parse().unwrap())
+        })
+        .collect();
+
+    let all_numbers = rules
+        .iter()
+        .flat_map(|(min, max)| (min..=max).iter().collect())
+        .count();
+
+    all_numbers
 }
 
 fn main() {
